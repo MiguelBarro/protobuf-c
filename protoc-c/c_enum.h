@@ -64,6 +64,8 @@
 #define GOOGLE_PROTOBUF_COMPILER_C_ENUM_H__
 
 #include <string>
+
+#include <protoc-c/google_evil.h>
 #include <google/protobuf/descriptor.h>
 
 namespace google {

@@ -69,6 +69,7 @@
 #include <google/protobuf/descriptor.h>
 #include <protobuf-c/protobuf-c.pb.h>
 #include <google/protobuf/io/printer.h>
+#include <protoc-c/google_evil.h>
 
 namespace google {
 namespace protobuf {
@@ -172,7 +173,7 @@ int compare_name_indices_by_name(const void*, const void*);
 // This wrapper is needed to be able to compile against protobuf2.
 inline int FieldSyntax(const FieldDescriptor* field) {
 #ifdef HAVE_PROTO3
-  return field->file()->syntax() == FileDescriptor::SYNTAX_PROTO3 ? 3 : 2;
+  return field->file()->edition() >= EDITION_2023 ? 3 : 2;
 #else
   return 2;
 #endif

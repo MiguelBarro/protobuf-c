@@ -63,9 +63,11 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_C_FIELD_H__
 #define GOOGLE_PROTOBUF_COMPILER_C_FIELD_H__
 
+
 #include <memory>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/descriptor.h>
+#include <protoc-c/google_evil.h>
 
 namespace google {
 namespace protobuf {

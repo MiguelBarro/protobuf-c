@@ -66,6 +66,7 @@
 #include <map>
 #include <string>
 #include <google/protobuf/descriptor.h>
+#include <protoc-c/google_evil.h>
 
 namespace google {
 namespace protobuf {

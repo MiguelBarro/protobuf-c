@@ -1,10 +1,11 @@
+cmake_minimum_required(VERSION 3.16 FATAL_ERROR)
+cmake_policy(SET CMP0074 NEW)
+
 SET(PACKAGE protobuf-c)
 SET(PACKAGE_NAME protobuf-c)
 SET(PACKAGE_VERSION 1.4.1)
 SET(PACKAGE_URL https://github.com/protobuf-c/protobuf-c)
 SET(PACKAGE_DESCRIPTION "Protocol Buffers implementation in C")
-
-CMAKE_MINIMUM_REQUIRED(VERSION 3.10 FATAL_ERROR)
 
 PROJECT(protobuf-c)
 
@@ -48,6 +49,7 @@ SET (PC_SOURCES
 
 ADD_LIBRARY(protobuf-c ${PC_SOURCES})
 set_target_properties(protobuf-c PROPERTIES COMPILE_PDB_NAME protobuf-c)
+TARGET_COMPILE_FEATURES(protobuf-c PUBLIC cxx_std_17)
 IF (MSVC AND BUILD_SHARED_LIBS)
 	TARGET_COMPILE_DEFINITIONS(protobuf-c PRIVATE -DPROTOBUF_C_EXPORT)
 ENDIF (MSVC AND BUILD_SHARED_LIBS)
@@ -98,6 +100,7 @@ FILE(GLOB PROTOC_GEN_C_SRC ${MAIN_DIR}/protoc-c/*.h ${MAIN_DIR}/protoc-c/*.cc )
 ADD_EXECUTABLE(protoc-gen-c ${PROTOC_GEN_C_SRC} protobuf-c/protobuf-c.pb.cc protobuf-c/protobuf-c.pb.h)
 
 TARGET_LINK_LIBRARIES(protoc-gen-c ${PROTOBUF_PROTOC_LIBRARY} ${PROTOBUF_LIBRARY})
+TARGET_COMPILE_FEATURES(protoc-gen-c PRIVATE cxx_std_17)
 
 IF (MSVC AND BUILD_SHARED_LIBS)
 	TARGET_COMPILE_DEFINITIONS(protoc-gen-c PRIVATE -DPROTOBUF_USE_DLLS)

@@ -67,6 +67,7 @@
 
 #include <string>
 #include <google/protobuf/compiler/code_generator.h>
+#include <protoc-c/google_evil.h>
 
 #if defined(_WIN32) && defined(PROTOBUF_C_USE_SHARED_LIB)
 # define PROTOC_C_EXPORT __declspec(dllexport)

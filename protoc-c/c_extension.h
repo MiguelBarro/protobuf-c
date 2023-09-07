@@ -65,6 +65,7 @@
 
 #include <string>
 #include <google/protobuf/stubs/common.h>
+#include <protoc-c/google_evil.h>
 
 namespace google {
 namespace protobuf {
