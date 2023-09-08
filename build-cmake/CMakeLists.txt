@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.16 FATAL_ERROR)
 cmake_policy(SET CMP0074 NEW)
+cmake_policy(SET CMP0091 NEW)
 
 SET(PACKAGE protobuf-c)
 SET(PACKAGE_NAME protobuf-c)
@@ -36,6 +37,12 @@ if(MSVC)
   # using Visual Studio C++
   SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4267 /wd4244")
   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4267 /wd4244")
+
+  # Allow matching protobuf runtime dependency
+  if(NOT BUILD_SHARED_LIBS)
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+  endif(NOT BUILD_SHARED_LIBS)
+
 ENDIF()
 
 get_filename_component(MAIN_DIR ${CMAKE_CURRENT_SOURCE_DIR} PATH)
@@ -87,6 +94,7 @@ if (MSVC AND NOT BUILD_SHARED_LIBS)
 		string(REGEX REPLACE "/MD" "/MT" ${flag_var} "${${flag_var}}")
 	  endif(${flag_var} MATCHES "/MD")
 	endforeach(flag_var)
+
 endif (MSVC AND NOT BUILD_SHARED_LIBS)
 
 IF(BUILD_PROTOC)
