@@ -8,7 +8,115 @@ SET(PACKAGE_VERSION 1.4.1)
 SET(PACKAGE_URL https://github.com/protobuf-c/protobuf-c)
 SET(PACKAGE_DESCRIPTION "Protocol Buffers implementation in C")
 
-PROJECT(protobuf-c)
+PROJECT(protobuf-c C CXX)
+
+if (MSVC AND NOT BUILD_SHARED_LIBS)
+	SET(Protobuf_USE_STATIC_LIBS ON)
+endif (MSVC AND NOT BUILD_SHARED_LIBS)
+
+find_package(Protobuf MODULE REQUIRED)
+INCLUDE_DIRECTORIES(${PROTOBUF_INCLUDE_DIR})
+
+# for static protobuf libraries include the dependencies
+if (Protobuf_USE_STATIC_LIBS)
+    find_package(absl REQUIRED)
+
+    set(protobuf_ABSL_USED_TARGETS
+        absl::log_severity
+        absl::raw_logging_internal
+        absl::spinlock_wait
+        absl::malloc_internal
+        absl::base
+        absl::throw_delegate
+        absl::scoped_set_env
+        absl::strerror
+        absl::hashtablez_sampler
+        absl::raw_hash_set
+        absl::crc_cpu_detect
+        absl::crc_internal
+        absl::crc32c
+        absl::crc_cord_state
+        absl::stacktrace
+        absl::symbolize
+        absl::examine_stack
+        absl::failure_signal_handler
+        absl::debugging_internal
+        absl::demangle_internal
+        absl::leak_check
+        absl::flags_program_name
+        absl::flags_config
+        absl::flags_marshalling
+        absl::flags_commandlineflag_internal
+        absl::flags_commandlineflag
+        absl::flags_private_handle_accessor
+        absl::flags_reflection
+        absl::flags_internal
+        absl::flags
+        absl::flags_usage_internal
+        absl::flags_usage
+        absl::flags_parse
+        absl::hash
+        absl::city
+        absl::low_level_hash
+        absl::log_internal_check_op
+        absl::log_internal_conditions
+        absl::log_internal_format
+        absl::log_internal_globals
+        absl::log_internal_proto
+        absl::log_internal_message
+        absl::log_internal_log_sink_set
+        absl::log_internal_nullguard
+        absl::die_if_null
+        absl::log_flags
+        absl::log_globals
+        absl::log_initialize
+        absl::log_entry
+        absl::log_sink
+        absl::log_internal_fnmatch
+        absl::int128
+        absl::exponential_biased
+        absl::periodic_sampler
+        absl::random_distributions
+        absl::random_seed_gen_exception
+        absl::random_seed_sequences
+        absl::random_internal_seed_material
+        absl::random_internal_pool_urbg
+        absl::random_internal_platform
+        absl::random_internal_randen
+        absl::random_internal_randen_slow
+        absl::random_internal_randen_hwaes
+        absl::random_internal_randen_hwaes_impl
+        absl::random_internal_distribution_test_util
+        absl::status
+        absl::statusor
+        absl::string_view
+        absl::strings
+        absl::strings_internal
+        absl::str_format_internal
+        absl::cord_internal
+        absl::cordz_functions
+        absl::cordz_handle
+        absl::cordz_info
+        absl::cordz_sample_token
+        absl::cord
+        absl::graphcycles_internal
+        absl::kernel_timeout_internal
+        absl::synchronization
+        absl::time
+        absl::civil_time
+        absl::time_zone
+        absl::bad_any_cast_impl
+        absl::bad_optional_access
+        absl::bad_variant_access
+    )
+
+    find_package(utf8_range REQUIRED)
+
+    set(protobuf_UTF8_USED_TARGETS
+        utf8_range::utf8_validity
+        utf8_range::utf8_range
+    )
+endif()
 
 #options
 option(BUILD_PROTO3 "BUILD_PROTO3" ON)
@@ -60,19 +168,13 @@ TARGET_COMPILE_FEATURES(protobuf-c PUBLIC cxx_std_17)
 IF (MSVC AND BUILD_SHARED_LIBS)
 	TARGET_COMPILE_DEFINITIONS(protobuf-c PRIVATE -DPROTOBUF_C_EXPORT)
 ENDIF (MSVC AND BUILD_SHARED_LIBS)
+target_link_libraries(protobuf-c ${protobuf_ABSL_USED_TARGETS} ${protobuf_UTF8_USED_TARGETS})
 
 INCLUDE_DIRECTORIES(${MAIN_DIR})
 INCLUDE_DIRECTORIES(${MAIN_DIR}/protobuf-c)
 
 IF(BUILD_PROTOC)
 INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR}) # for generated files
-
-if (MSVC AND NOT BUILD_SHARED_LIBS)
-	SET(Protobuf_USE_STATIC_LIBS ON)
-endif (MSVC AND NOT BUILD_SHARED_LIBS)
-
-FIND_PACKAGE(Protobuf REQUIRED)
-INCLUDE_DIRECTORIES(${PROTOBUF_INCLUDE_DIR})
 
 if (BUILD_PROTO3)
 	ADD_DEFINITIONS(-DHAVE_PROTO3)
@@ -107,7 +209,12 @@ ADD_CUSTOM_COMMAND(OUTPUT protobuf-c/protobuf-c.pb.cc protobuf-c/protobuf-c.pb.h
 FILE(GLOB PROTOC_GEN_C_SRC ${MAIN_DIR}/protoc-c/*.h ${MAIN_DIR}/protoc-c/*.cc )
 ADD_EXECUTABLE(protoc-gen-c ${PROTOC_GEN_C_SRC} protobuf-c/protobuf-c.pb.cc protobuf-c/protobuf-c.pb.h)
 
-TARGET_LINK_LIBRARIES(protoc-gen-c ${PROTOBUF_PROTOC_LIBRARY} ${PROTOBUF_LIBRARY})
+TARGET_LINK_LIBRARIES(protoc-gen-c
+    ${PROTOBUF_PROTOC_LIBRARY}
+    ${PROTOBUF_LIBRARY}
+    ${protobuf_ABSL_USED_TARGETS}
+    ${protobuf_UTF8_USED_TARGETS}
+)
 TARGET_COMPILE_FEATURES(protoc-gen-c PRIVATE cxx_std_17)
 
 IF (MSVC AND BUILD_SHARED_LIBS)
@@ -147,7 +254,11 @@ ADD_CUSTOM_COMMAND(OUTPUT t/test-full.pb.cc t/test-full.pb.h
 GENERATE_TEST_SOURCES(${TEST_DIR}/test-full.proto t/test-full.pb-c.c t/test-full.pb-c.h)
 
 ADD_EXECUTABLE(cxx-generate-packed-data ${TEST_DIR}/generated-code2/cxx-generate-packed-data.cc t/test-full.pb.h t/test-full.pb.cc protobuf-c/protobuf-c.pb.cc protobuf-c/protobuf-c.pb.h)
-TARGET_LINK_LIBRARIES(cxx-generate-packed-data ${PROTOBUF_LIBRARY})
+TARGET_LINK_LIBRARIES(cxx-generate-packed-data
+    ${PROTOBUF_LIBRARY}
+    ${protobuf_ABSL_USED_TARGETS}
+    ${protobuf_UTF8_USED_TARGETS}
+)
 IF (MSVC AND BUILD_SHARED_LIBS)
 	TARGET_COMPILE_DEFINITIONS(cxx-generate-packed-data PRIVATE -DPROTOBUF_USE_DLLS)
 ENDIF (MSVC AND BUILD_SHARED_LIBS)
@@ -162,8 +273,6 @@ GENERATE_TEST_SOURCES(${TEST_DIR}/test-optimized.proto t/test-optimized.pb-c.c t
 
 ADD_EXECUTABLE(test-generated-code2 ${TEST_DIR}/generated-code2/test-generated-code2.c t/generated-code2/test-full-cxx-output.inc t/test-full.pb-c.h t/test-full.pb-c.c t/test-optimized.pb-c.h t/test-optimized.pb-c.c)
 TARGET_LINK_LIBRARIES(test-generated-code2 protobuf-c)
-
-
 
 GENERATE_TEST_SOURCES(${TEST_DIR}/issue220/issue220.proto t/issue220/issue220.pb-c.c t/issue220/issue220.pb-c.h)
 ADD_EXECUTABLE(test-issue220 ${TEST_DIR}/issue220/issue220.c t/issue220/issue220.pb-c.c t/issue220/issue220.pb-c.h)
