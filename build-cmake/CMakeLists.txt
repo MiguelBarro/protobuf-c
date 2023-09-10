@@ -323,15 +323,32 @@ CONFIGURE_FILE(${MAIN_DIR}/protobuf-c/libprotobuf-c.pc.in libprotobuf-c.pc @ONLY
 INSTALL(FILES ${CMAKE_BINARY_DIR}/libprotobuf-c.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
 
 IF(BUILD_TESTS)
-INCLUDE(Dart)
+    INCLUDE(Dart)
 
-SET(DART_TESTING_TIMEOUT 5)
-ADD_TEST(test-generated-code test-generated-code)
-ADD_TEST(test-generated-code2 test-generated-code2)
-ADD_TEST(test-generated-code3 test-generated-code3)
-ADD_TEST(test-issue220 test-issue220)
-ADD_TEST(test-issue251 test-issue251)
-ADD_TEST(test-version test-version)
+    SET(DART_TESTING_TIMEOUT 5)
+    ADD_TEST(test-generated-code test-generated-code)
+    ADD_TEST(test-generated-code2 test-generated-code2)
+    ADD_TEST(test-generated-code3 test-generated-code3)
+    ADD_TEST(test-issue220 test-issue220)
+    ADD_TEST(test-issue251 test-issue251)
+    ADD_TEST(test-version test-version)
+
+    if(WIN32)
+        string(REGEX MATCHALL  "[A-Z]:[^;:]+;" PATH_VARIABLE "$ENV{PATH}" )
+        foreach (itvar ${PATH_VARIABLE})
+                string(REPLACE ";" "" itvar ${itvar})
+                set(WINDOWS_PATH_VARIABLE "${WINDOWS_PATH_VARIABLE}\\;${itvar}" )
+        endforeach( itvar )
+
+        set_tests_properties(
+            test-generated-code 
+            test-generated-code2 
+            test-generated-code3 
+            test-issue220 
+            test-issue251 
+            test-version 
+            PROPERTIES ENVIRONMENT "PATH=${WINDOWS_PATH_VARIABLE}\\;$<TARGET_FILE_DIR:protoc-gen-c>" )
+    endif(WIN32)
 ENDIF()
 
 
